@@ -72,18 +72,28 @@ function App() {
 
   return (
     <>
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <header style={{ textAlign: 'center' }}>
         <h1>Dagens fakta</h1>
-        <nav style={{ display: 'flex', gap: '0.75rem' }}>
-          <a href="#/" onClick={(e) => { e.preventDefault(); navigate('/') }} aria-current={!isAdmin ? 'page' : undefined}>Home</a>
-          <a href="#/admin" onClick={(e) => { e.preventDefault(); navigate('/admin') }} aria-current={isAdmin ? 'page' : undefined}>Admin</a>
-        </nav>
       </header>
 
       {!isAdmin && (
         <div className="card" style={{ marginTop: '1rem' }}>
           <button onClick={handleGenerateClick}>Visste du att...</button>
-          <p style={{ minHeight: '2.5rem', marginTop: '1rem' }}>
+          <p
+            style={{
+              minHeight: '2.5rem',
+              marginTop: '1rem',
+              fontSize: '1.25rem',
+              lineHeight: 1.6,
+              textAlign: 'center',
+              color: '#111827',
+              background: '#ffffff',
+              border: '1px solid #e5e7eb',
+              padding: '1rem',
+              borderRadius: '0.5rem',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)'
+            }}
+          >
             {generatedText || 'Click the button to generate text.'}
           </p>
         </div>

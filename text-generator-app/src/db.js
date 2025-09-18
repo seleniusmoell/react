@@ -1,7 +1,7 @@
 // Minimal IndexedDB helper for storing phrases
 
 const DATABASE_NAME = 'textgen-db'
-const DATABASE_VERSION = 1
+const DATABASE_VERSION = 2
 const STORE_NAME = 'phrases'
 
 function openDatabase() {
@@ -10,9 +10,21 @@ function openDatabase() {
 
     request.onupgradeneeded = (event) => {
       const db = request.result
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
+      const oldVersion = event.oldVersion || 0
+
+      // v1: create store and createdAt index
+      if (oldVersion < 1) {
         const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true })
         store.createIndex('createdAt', 'createdAt', { unique: false })
+      }
+
+      // v2: add source index for optional source field
+      if (oldVersion < 2) {
+        const tx = event.currentTarget.transaction
+        const store = tx.objectStore(STORE_NAME)
+        if (!store.indexNames.contains('source')) {
+          store.createIndex('source', 'source', { unique: false })
+        }
       }
     }
 
@@ -44,8 +56,8 @@ export function getAllPhrases() {
   })
 }
 
-export function addPhrase(text) {
-  const phrase = { text, createdAt: Date.now() }
+export function addPhrase(text, source = '') {
+  const phrase = { text, source, createdAt: Date.now() }
   return withStore('readwrite', (store) => {
     return new Promise((resolve, reject) => {
       const request = store.add(phrase)
@@ -72,7 +84,7 @@ export async function ensureSeedData(defaultPhrases) {
   const inserted = []
   for (const text of defaultPhrases) {
     // eslint-disable-next-line no-await-in-loop
-    const saved = await addPhrase(text)
+    const saved = await addPhrase(text, '')
     inserted.push(saved)
   }
   return inserted
